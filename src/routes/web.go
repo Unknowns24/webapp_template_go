@@ -1,13 +1,11 @@
 package routes
 
 import (
-	"net/http"
+	controllers "app_template/src/app/Http/controllers/user"
 
 	"github.com/labstack/echo/v4"
 )
 
 func CreateWebRoutes(app *echo.Echo) {
-	app.GET("/", func(ctx echo.Context) error {
-		return ctx.String(http.StatusOK, "Hello, World!")
-	})
+	app.GET("/", controllers.UserController.Add)
 }

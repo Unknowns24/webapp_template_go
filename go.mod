@@ -6,4 +6,5 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/labstack/echo/v4 v4.3.0
 	github.com/spf13/viper v1.7.1
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 )
