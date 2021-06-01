@@ -5,8 +5,10 @@ import (
 	"app_template/src/routes"
 	"app_template/src/utils"
 	"fmt"
+	"net/http"
 	"os"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -62,6 +64,19 @@ func main() {
 	app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Output: myLogFile,
 	}))
+
+	/////////////////////////
+	// Serve statics files //
+	/////////////////////////
+
+	staticBox, findBoxErr := rice.FindBox("./resources/static")
+	if findBoxErr != nil {
+		fmt.Println("FATAL ERROR!!!\n Could not find box", err)
+		return
+	}
+
+	staticFileServer := http.StripPrefix("/static/", http.FileServer(staticBox.HTTPBox()))
+	app.GET("/static/*", echo.WrapHandler(staticFileServer))
 
 	///////////////////
 	// Adding routes //
