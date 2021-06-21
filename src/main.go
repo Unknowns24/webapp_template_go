@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -104,14 +105,62 @@ func main() {
 	staticFileServer := http.StripPrefix("/static/", http.FileServer(staticBox.HTTPBox()))
 	app.GET("/static/*", echo.WrapHandler(staticFileServer))
 
-	///////////////////////
-	// Getting templates //
-	///////////////////////
+	/////////////////////
+	// Template loader //
+	/////////////////////
 
-	render_htmls := NewTemplate()
-	render_htmls.Add("home.html", template.Must(template.ParseFiles("./src/resources/views/home/home.html", "./src/resources/layouts/home/homepage.html")))
+	files, err := ioutil.ReadDir("./src/resources/layouts/") // Get folders in the layout dir
 
-	app.Renderer = render_htmls
+	// Check if there is an error
+	if err != nil {
+		fmt.Println("FATAL ERROR!!!\n Could not open layout folder", err)
+		return
+	}
+
+	render_htmls := NewTemplate() // Create a new template list
+
+	// List files and register the templates
+	for _, rootFile := range files {
+		if rootFile.IsDir() {
+			subDirFiles, subDirErr := ioutil.ReadDir("./src/resources/layouts/" + rootFile.Name()) // List subdir files
+
+			// Check if an error ocurred
+			if subDirErr != nil {
+				fmt.Println("FATAL ERROR!!!\n Could not open "+rootFile.Name()+" layout folder", err)
+				return
+			}
+
+			var fileList []string
+
+			// List files
+			for _, file := range subDirFiles {
+				if !file.IsDir() {
+					fileList = append(fileList, "./src/resources/layouts/"+rootFile.Name()+"/"+file.Name())
+				}
+			}
+
+			viewsFiles, viewsErr := ioutil.ReadDir("./src/resources/views/" + rootFile.Name()) // List subdir files
+
+			// Check if an error ocurred
+			if viewsErr != nil {
+				fmt.Println("FATAL ERROR!!!\n Could not open "+rootFile.Name()+" views folder", err)
+				return
+			}
+
+			// List views files of the layout
+			for _, vfile := range viewsFiles {
+				if !vfile.IsDir() {
+					var params []string
+					params = append(params, fileList...)
+					params = append(params, "./src/resources/views/"+rootFile.Name()+"/"+vfile.Name())
+
+					render_htmls.Add(vfile.Name(), template.Must(template.ParseFiles(params...)))
+				}
+			}
+		}
+	}
+
+	app.Renderer = render_htmls // Set app renderer
 
 	///////////////////
 	// Adding routes //

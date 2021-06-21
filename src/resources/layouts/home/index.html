@@ -1,0 +1,21 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+  {{template "head"}}
+  
+  <body>    
+    {{template "navbar"}}
+    
+    <main role="main">
+      {{template "header"}}
+      
+      {{template "content"}}
+    </main>
+
+    {{template "footer"}}
+
+    <script src="static/homepage/js/jquery.min.js"></script>
+    <script src="static/homepage/js/main.js"></script>
+  </body>
+</html>
+{{end}}
